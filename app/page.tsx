@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import Camera from '@/components/ui/camera';
+import Camera from '@/src/components/ui/camera'
 
 /**
  * ScholarScan Home Page
