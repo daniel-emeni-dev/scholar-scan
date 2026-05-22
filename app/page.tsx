@@ -33,7 +33,7 @@ export default function Home() {
       setIsAnalyzing(true);
       setAnalysisResult(null);
       setError(null);
-      
+
       const optimizedImage = await compressImage(imageData, 1200, 0.75);
       setCapturedImage(optimizedImage);
     } catch (error) {
@@ -68,7 +68,7 @@ export default function Home() {
 
     setIsAnalyzing(true);
     setError(null);
-    
+
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -89,10 +89,12 @@ export default function Home() {
         id: crypto.randomUUID(),
         image: capturedImage,
         result: data.result,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       };
       setHistory((prev) => [newItem, ...prev]);
-
     } catch (error: any) {
       console.error("AI Analysis failed:", error);
       setError(error.message || "Network connection interrupted.");
@@ -111,10 +113,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100 p-6 flex flex-col items-center relative overflow-x-hidden">
-      
       {/* HEADER WITH SIDEBAR TOGGLE BUTTON */}
       <header className="w-full max-w-md flex items-center justify-between mt-8 mb-12 relative">
-        <div className="w-8" /> {/* Spacer to balance the header center alignment */}
+        <div className="w-8" />{" "}
+        {/* Spacer to balance the header center alignment */}
         <div className="text-center">
           <h1 className="text-4xl font-black text-yellow-500 italic tracking-tighter">
             SCHOLARSCAN
@@ -123,16 +125,31 @@ export default function Home() {
             AI Engineering Assistant
           </p>
         </div>
-        
         {/* History Toggle Trigger */}
-        <button 
+        <button
           onClick={() => setIsSidebarOpen(true)}
-          className="p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 hover:text-yellow-500 transition-colors relative active:scale-95"
+          className="p-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800/80 hover:border-zinc-700 rounded-xl text-zinc-400 hover:text-yellow-500 transition-all relative active:scale-95 flex items-center justify-center group"
           title="Open History"
         >
-          📁
+          {/* Modern High-Class History Vector Icon */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-4 h-4 transition-transform group-hover:rotate-[-12deg]"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+          </svg>
+
+          {/* Counter Badge */}
           {history.length > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-yellow-500 text-black font-black text-[9px] rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-yellow-500 text-black font-black text-[9px] rounded-full flex items-center justify-center border border-zinc-950">
               {history.length}
             </span>
           )}
@@ -150,14 +167,15 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-6 animate-in fade-in duration-500">
-            
             {/* 1. IMAGE PREVIEW */}
             <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-500/30 bg-zinc-900 select-none">
               <img
                 src={capturedImage}
                 alt="Scan"
                 className={`w-full object-contain max-h-[45vh] transition-all duration-700 ${
-                  isAnalyzing ? "brightness-[0.4] contrast-[1.1] scale-[1.01]" : "brightness-100"
+                  isAnalyzing
+                    ? "brightness-[0.4] contrast-[1.1] scale-[1.01]"
+                    : "brightness-100"
                 } ${error ? "border-red-500/40 grayscale brightness-[0.5]" : ""}`}
               />
 
@@ -201,7 +219,7 @@ export default function Home() {
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     Professor's Breakdown
                   </h2>
-                  <button 
+                  <button
                     onClick={handleCopy}
                     className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-700 transition-all font-medium active:scale-95"
                   >
@@ -213,11 +231,36 @@ export default function Home() {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      h2: ({ node, ...props }) => <h2 className="text-yellow-500 font-semibold text-base mt-6 mb-2 border-l-2 border-yellow-500/50 pl-2 uppercase tracking-wide" {...props} />,
-                      h3: ({ node, ...props }) => <h3 className="text-zinc-100 font-medium text-sm mt-4 mb-1 text-yellow-500/80" {...props} />,
-                      ul: ({ node, ...props }) => <ul className="list-disc list-inside space-y-2 my-3 pl-1 text-zinc-400" {...props} />,
-                      li: ({ node, ...props }) => <li className="marker:text-yellow-500 text-zinc-300" {...props} />,
-                      p: ({ node, ...props }) => <p className="text-zinc-300 font-normal leading-relaxed mb-3 inline-block w-full" {...props} />,
+                      h2: ({ node, ...props }) => (
+                        <h2
+                          className="text-yellow-500 font-semibold text-base mt-6 mb-2 border-l-2 border-yellow-500/50 pl-2 uppercase tracking-wide"
+                          {...props}
+                        />
+                      ),
+                      h3: ({ node, ...props }) => (
+                        <h3
+                          className="text-zinc-100 font-medium text-sm mt-4 mb-1 text-yellow-500/80"
+                          {...props}
+                        />
+                      ),
+                      ul: ({ node, ...props }) => (
+                        <ul
+                          className="list-disc list-inside space-y-2 my-3 pl-1 text-zinc-400"
+                          {...props}
+                        />
+                      ),
+                      li: ({ node, ...props }) => (
+                        <li
+                          className="marker:text-yellow-500 text-zinc-300"
+                          {...props}
+                        />
+                      ),
+                      p: ({ node, ...props }) => (
+                        <p
+                          className="text-zinc-300 font-normal leading-relaxed mb-3 inline-block w-full"
+                          {...props}
+                        />
+                      ),
                     }}
                   >
                     {analysisResult.replace(/\$/g, "")}
@@ -252,15 +295,17 @@ export default function Home() {
 
       {/* --- SIDEBAR DRAWER OVERLAY PANEL --- */}
       {/* Dimmed Backdrop Shroud */}
-      <div 
+      <div
         onClick={() => setIsSidebarOpen(false)}
         className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity duration-300 ${
-          isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          isSidebarOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       />
 
       {/* Slide-out Sheet Panel */}
-      <aside 
+      <aside
         className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-zinc-900 border-l border-zinc-800 z-50 p-6 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
           isSidebarOpen ? "translate-x-0" : "translate-x-full"
         }`}
@@ -269,7 +314,7 @@ export default function Home() {
           <h2 className="text-sm font-bold tracking-widest text-zinc-400 uppercase">
             Scan History log
           </h2>
-          <button 
+          <button
             onClick={() => setIsSidebarOpen(false)}
             className="text-zinc-500 hover:text-white text-xs active:scale-95"
           >
@@ -295,9 +340,13 @@ export default function Home() {
               >
                 {/* Micro Thumbnail Preview */}
                 <div className="h-12 w-12 rounded-lg overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
-                  <img src={item.image} alt="Thumbnail" className="h-full w-full object-cover group-hover:scale-105 transition-transform" />
+                  <img
+                    src={item.image}
+                    alt="Thumbnail"
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                  />
                 </div>
-                
+
                 {/* Meta details */}
                 <div className="min-w-0 flex-1">
                   <p className="text-zinc-300 text-xs font-semibold truncate group-hover:text-yellow-500 transition-colors">
@@ -312,7 +361,6 @@ export default function Home() {
           )}
         </div>
       </aside>
-
     </main>
   );
 }
