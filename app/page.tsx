@@ -10,16 +10,16 @@ import { compressImage } from "@/src/lib/compressor";
 
 /**
  * ScholarScan Home Page
- * Manages the workflow from capturing a note to AI analysis with Tailwind v4 engine compilation.
+ * Manages the workflow from capturing a note to AI analysis with robust signal recovery error cards.
  */
 export default function Home() {
   // --- STATE ---
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  // Added state to hold the AI's response
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
-  // State for clipboard copy confirmation feedback
   const [copied, setCopied] = useState(false);
+  // ERROR TRACKING STATE
+  const [error, setError] = useState<string | null>(null);
 
   // --- HANDLERS ---
 
@@ -28,6 +28,7 @@ export default function Home() {
     try {
       setIsAnalyzing(true); // Engages load layout during canvas processing calculations
       setAnalysisResult(null); // Reset result if a new photo is taken
+      setError(null); // Wipe any old errors
       
       // Compresses raw multi-megabyte string into optimized 1200px footprint at 75% quality
       const optimizedImage = await compressImage(imageData, 1200, 0.75);
@@ -45,6 +46,7 @@ export default function Home() {
     setAnalysisResult(null);
     setIsAnalyzing(false);
     setCopied(false);
+    setError(null);
   };
 
   // Handles seamless clipboard copy interaction
@@ -64,6 +66,8 @@ export default function Home() {
     if (!capturedImage) return;
 
     setIsAnalyzing(true);
+    setError(null); // Always clear previous errors when starting an analysis cycle
+    
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
@@ -76,15 +80,13 @@ export default function Home() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong during analysis");
+        throw new Error(data.error || "Serverless gateway timeout. Transmission broken.");
       }
 
       setAnalysisResult(data.result);
-    } catch (error) {
+    } catch (error: any) {
       console.error("AI Analysis failed:", error);
-      setAnalysisResult(
-        "Error: Could not reach the AI. Check your connection.",
-      );
+      setError(error.message || "Network connection interrupted. Failed to reach server.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -112,26 +114,21 @@ export default function Home() {
         ) : (
           <div className="space-y-6 animate-in fade-in duration-500">
             
-            {/* 1. IMAGE PREVIEW (NATIVE TAILWIND v4 ARCHITECTURE) */}
+            {/* 1. IMAGE PREVIEW */}
             <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-500/30 bg-zinc-900 select-none">
               <img
                 src={capturedImage}
                 alt="Scan"
                 className={`w-full object-contain max-h-[45vh] transition-all duration-700 ${
                   isAnalyzing ? "brightness-[0.4] contrast-[1.1] scale-[1.01]" : "brightness-100"
-                }`}
+                } ${error ? "border-red-500/40 grayscale brightness-[0.5]" : ""}`}
               />
 
               {/* Dynamic rendering of mechanical scanning lens hardware */}
               {isAnalyzing && (
                 <>
-                  {/* Ambient Darkened Sh shroud */}
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-yellow-500/5 to-transparent pointer-events-none" />
-                  
-                  {/* The moving laser sweep line powered by your updated globals.css variable */}
                   <div className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-400 to-transparent shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-scan pointer-events-none" />
-                  
-                  {/* High-fidelity hardware dashboard micro-badge */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-950/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-zinc-800 text-[10px] uppercase font-bold tracking-widest text-zinc-400 animate-pulse whitespace-nowrap">
                     Reading Schematic Matrix...
                   </div>
@@ -139,8 +136,31 @@ export default function Home() {
               )}
             </div>
 
-            {/* 2. AI RESULT BOX */}
-            {analysisResult && (
+            {/* 2. ERROR RECOVERY BOUNDARY CARD */}
+            {error && !isAnalyzing && (
+              <div className="w-full bg-red-950/20 border-2 border-red-500/30 rounded-2xl p-5 shadow-2xl animate-in shake duration-300">
+                <div className="flex items-center gap-3 border-b border-red-500/20 pb-3 mb-4">
+                  <div className="h-2 w-2 rounded-full bg-red-500 animate-ping" />
+                  <h2 className="text-red-400 text-xs font-black uppercase tracking-widest">
+                    SIGNAL TRANSMISSION INTERRUPTED
+                  </h2>
+                </div>
+                
+                <p className="text-zinc-400 text-xs font-mono bg-zinc-950/60 p-3 rounded-xl border border-zinc-900 mb-4 leading-relaxed">
+                  Code: <span className="text-red-400 font-bold">{error}</span>
+                </p>
+
+                <button
+                  onClick={analyzeWithAI}
+                  className="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-extrabold rounded-xl transition-all active:scale-[0.98] uppercase tracking-wider text-xs shadow-[0_4px_20px_rgba(239,68,68,0.2)]"
+                >
+                  ⚡ Retry Signal Transmission
+                </button>
+              </div>
+            )}
+
+            {/* 3. AI RESULT BOX */}
+            {analysisResult && !error && (
               <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
                   <h2 className="text-yellow-500 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
@@ -148,7 +168,6 @@ export default function Home() {
                     Professor's Breakdown
                   </h2>
                   
-                  {/* Action button to copy output directly */}
                   <button 
                     onClick={handleCopy}
                     className="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-1.5 rounded-lg border border-zinc-700 transition-all font-medium active:scale-95"
@@ -157,61 +176,44 @@ export default function Home() {
                   </button>
                 </div>
 
-                {/* Styled Markdown Container */}
                 <div className="text-zinc-300 text-sm leading-relaxed space-y-4 whitespace-pre-line">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      // Turns ## Headings into clean, highlighted section titles
                       h2: ({ node, ...props }) => (
-                        <h2
-                          className="text-yellow-500 font-semibold text-base mt-6 mb-2 border-l-2 border-yellow-500/50 pl-2 uppercase tracking-wide"
-                          {...props}
-                        />
+                        <h2 className="text-yellow-500 font-semibold text-base mt-6 mb-2 border-l-2 border-yellow-500/50 pl-2 uppercase tracking-wide" {...props} />
                       ),
                       h3: ({ node, ...props }) => (
-                        <h3
-                          className="text-zinc-100 font-medium text-sm mt-4 mb-1 text-yellow-500/80"
-                          {...props}
-                        />
+                        <h3 className="text-zinc-100 font-medium text-sm mt-4 mb-1 text-yellow-500/80" {...props} />
                       ),
-                      // Fixes the ugly stacked lists and builds neat bullet points
                       ul: ({ node, ...props }) => (
-                        <ul
-                          className="list-disc list-inside space-y-2 my-3 pl-1 text-zinc-400"
-                          {...props}
-                        />
+                        <ul className="list-disc list-inside space-y-2 my-3 pl-1 text-zinc-400" {...props} />
                       ),
                       li: ({ node, ...props }) => (
                         <li className="marker:text-yellow-500 text-zinc-300" {...props} />
                       ),
-                      // Keeps paragraph spacing natural
                       p: ({ node, ...props }) => (
-                        <p
-                          className="text-zinc-300 font-normal leading-relaxed mb-3 inline-block w-full"
-                          {...props}
-                        />
+                        <p className="text-zinc-300 font-normal leading-relaxed mb-3 inline-block w-full" {...props} />
                       ),
                     }}
                   >
-                    {/* Wipes out the raw dollar signs so the formulas display cleanly */}
                     {analysisResult.replace(/\$/g, "")}
                   </ReactMarkdown>
                 </div>
               </div>
             )}
 
-            {/* 3. BUTTONS */}
+            {/* 4. MAIN ACTION BUTTONS */}
             <div className="flex gap-4">
               <button
                 onClick={handleReset}
                 disabled={isAnalyzing}
                 className="flex-1 py-4 text-zinc-400 font-semibold hover:text-white transition-colors disabled:opacity-30"
               >
-                {analysisResult ? "Clear" : "Retake"}
+                {analysisResult || error ? "Clear" : "Retake"}
               </button>
 
-              {!analysisResult && (
+              {!analysisResult && !error && (
                 <button
                   onClick={analyzeWithAI}
                   disabled={isAnalyzing}

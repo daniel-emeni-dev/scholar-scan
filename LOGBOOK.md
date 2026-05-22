@@ -139,3 +139,23 @@ Instead of forcing the compiler to ignore standard lint warnings, I refactored t
   0%, 100% { top: 0%; }
   50% { top: 100%; }
 }
+
+
+---
+
+## Entry 7: Bulletproofing Networks via Error Boundaries and Signal Retries
+**Date: May 2026** **Status: Fault Tolerance Complete**
+
+### 📝 The Scene
+The core happy path of the application was flawless, but deploying a mobile engineering assistant requires planning for chaotic network behaviors. If a request timed out or hit a spotty cellular tower, the app would drop into a basic catch block, dumping ugly raw string layout codes straight onto the user dashboard.
+
+### 🔍 Tracing the UX Deficit
+Forcing a user to hit "Clear", restart the hardware camera, take another crisp picture of their circuit diagram, and re-run client compression algorithms just because a single network packet dropped is a terrible engineering flow. The file state is already safely held locally; we only need to secure a route re-fetch.
+
+### 💡 The Solution
+I implemented an active isolation terminal state inside `page.tsx` utilizing a separate `error` string tracking array. 
+
+When an API catch block intercepts a error exception, the dashboard dynamically fades out the scanner loader and mounts a dedicated, high-contrast red indicator pane (`bg-red-950/20 border-2 border-red-500/30`). 
+
+The card prints out a sanitized mono-spaced breakdown of the specific server exception code and surfaces an optimized `Retry Signal Transmission` call-to-action button. Tapping retry leaves the image asset perfectly secure inside memory state and hot-reloads the asynchronous api channel instantly.
+
