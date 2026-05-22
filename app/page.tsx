@@ -10,7 +10,7 @@ import { compressImage } from "@/src/lib/compressor";
 
 /**
  * ScholarScan Home Page
- * Manages the workflow from capturing a note to AI analysis via a secure API route.
+ * Manages the workflow from capturing a note to AI analysis with Tailwind v4 engine compilation.
  */
 export default function Home() {
   // --- STATE ---
@@ -111,13 +111,32 @@ export default function Home() {
           </div>
         ) : (
           <div className="space-y-6 animate-in fade-in duration-500">
-            {/* 1. IMAGE PREVIEW */}
-            <div className="rounded-2xl overflow-hidden border-2 border-yellow-500/30 bg-zinc-900">
+            
+            {/* 1. IMAGE PREVIEW (NATIVE TAILWIND v4 ARCHITECTURE) */}
+            <div className="relative rounded-2xl overflow-hidden border-2 border-yellow-500/30 bg-zinc-900 select-none">
               <img
                 src={capturedImage}
                 alt="Scan"
-                className="w-full object-contain max-h-[45vh]"
+                className={`w-full object-contain max-h-[45vh] transition-all duration-700 ${
+                  isAnalyzing ? "brightness-[0.4] contrast-[1.1] scale-[1.01]" : "brightness-100"
+                }`}
               />
+
+              {/* Dynamic rendering of mechanical scanning lens hardware */}
+              {isAnalyzing && (
+                <>
+                  {/* Ambient Darkened Sh shroud */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-yellow-500/5 to-transparent pointer-events-none" />
+                  
+                  {/* The moving laser sweep line powered by your updated globals.css variable */}
+                  <div className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-yellow-400 to-transparent shadow-[0_0_15px_rgba(234,179,8,0.8)] animate-scan pointer-events-none" />
+                  
+                  {/* High-fidelity hardware dashboard micro-badge */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-950/80 backdrop-blur-md px-4 py-1.5 rounded-full border border-zinc-800 text-[10px] uppercase font-bold tracking-widest text-zinc-400 animate-pulse whitespace-nowrap">
+                    Reading Schematic Matrix...
+                  </div>
+                </>
+              )}
             </div>
 
             {/* 2. AI RESULT BOX */}
@@ -196,9 +215,9 @@ export default function Home() {
                 <button
                   onClick={analyzeWithAI}
                   disabled={isAnalyzing}
-                  className="flex-[2] py-4 bg-yellow-500 text-black font-extrabold rounded-xl shadow-lg active:scale-95 disabled:opacity-50 transition-all"
+                  className="flex-[2] py-4 bg-yellow-500 text-black font-extrabold rounded-xl shadow-lg active:scale-95 disabled:opacity-50 transition-all tracking-wider text-xs uppercase"
                 >
-                  {isAnalyzing ? "ANALYZING..." : "ANALYZE SCAN"}
+                  {isAnalyzing ? "Processing Signal..." : "ANALYZE SCAN"}
                 </button>
               )}
             </div>

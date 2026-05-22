@@ -113,3 +113,29 @@ const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
 ctx.drawImage(img, 0, 0, width, height);
 const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+
+---
+
+## Entry 6: Implementing the Mechanical Signal Scanner UI
+**Date: May 2026** **Status: Interface Optimization Complete**
+
+### 📝 The Scene
+With client-side payload compression humming at lightning speeds, the core application was fully stable. However, when a user clicked "ANALYZE SCAN", the screen went completely static while waiting for the Groq cloud servers to finish parsing layout tokens. 
+
+### 🔍 Tracing the UX Friction
+Generic spinning loaders feel disconnected from a serious engineering utility. I wanted a raw, mechanical feel that communicated precision. The solution needed to be performant, responsive, and implemented via Tailwind v4 utility hooks instead of heavy external animation runtimes.
+
+During implementation, the editor threw an `Unknown at rule @theme` warning because local CSS linters are still catching up to Tailwind v4's new directive style. 
+
+### 💡 The Solution
+Instead of forcing the compiler to ignore standard lint warnings, I refactored the configuration by flattening the theme utilities directly into the CSS `:root`. Tailwind v4 automatically maps root-level custom properties (like `--animate-scan`) into executable utility classes.
+
+```css
+:root {
+  --animate-scan: hardwareScan 3s ease-in-out infinite;
+}
+
+@keyframes hardwareScan {
+  0%, 100% { top: 0%; }
+  50% { top: 100%; }
+}
