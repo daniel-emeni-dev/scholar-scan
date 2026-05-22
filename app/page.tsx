@@ -5,6 +5,8 @@ import { useState } from "react";
 import Camera from "@/src/components/ui/camera";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+// OPTIMIZATION IMPORT: Client-side downscaler helper
+import { compressImage } from "@/src/lib/compressor";
 
 /**
  * ScholarScan Home Page
@@ -21,9 +23,21 @@ export default function Home() {
 
   // --- HANDLERS ---
 
-  const handleCapture = (imageData: string) => {
-    setCapturedImage(imageData);
-    setAnalysisResult(null); // Reset result if a new photo is taken
+  // OPTIMIZED WORKFLOW: Catches raw data and downsamples data load asynchronously
+  const handleCapture = async (imageData: string) => {
+    try {
+      setIsAnalyzing(true); // Engages load layout during canvas processing calculations
+      setAnalysisResult(null); // Reset result if a new photo is taken
+      
+      // Compresses raw multi-megabyte string into optimized 1200px footprint at 75% quality
+      const optimizedImage = await compressImage(imageData, 1200, 0.75);
+      setCapturedImage(optimizedImage);
+    } catch (error) {
+      console.error("Client-side compression failed, falling back to raw payload:", error);
+      setCapturedImage(imageData); // Graceful recovery fallback if browser canvas processing drops
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleReset = () => {
@@ -172,7 +186,8 @@ export default function Home() {
             <div className="flex gap-4">
               <button
                 onClick={handleReset}
-                className="flex-1 py-4 text-zinc-400 font-semibold hover:text-white transition-colors"
+                disabled={isAnalyzing}
+                className="flex-1 py-4 text-zinc-400 font-semibold hover:text-white transition-colors disabled:opacity-30"
               >
                 {analysisResult ? "Clear" : "Retake"}
               </button>
