@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ScholarScan — AI Engineering Assistant",
+  title: "ScholarScan - AI Engineering Assistant",
   description: "High-fidelity schematic scanning and AI-powered note analysis framework.",
 };
 export default function RootLayout({
