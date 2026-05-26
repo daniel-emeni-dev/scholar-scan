@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/src/lib/supabase/client";
+import { useEffect } from "react";
 import Camera from "@/src/components/ui/camera";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -68,6 +70,42 @@ export default function Home() {
     }
   };
 
+  // --- CLOUD HISTORY SYNCHRONIZATION LOOP ---
+  useEffect(() => {
+    const fetchCloudHistory = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("scans")
+          .select("id, image_url, analysis_text, created_at")
+          .order("created_at", { ascending: false })
+          .limit(20); // Pull down the 20 most recent transmissions
+
+        if (error) {
+          console.error("Failed to query cloud logbook:", error.message);
+          return;
+        }
+
+        if (data) {
+          // Map the Supabase table naming structure cleanly back into your HistoryItem UI format
+          const mappedHistory: HistoryItem[] = data.map((row) => ({
+            id: row.id,
+            image: row.image_url,
+            result: row.analysis_text,
+            timestamp: new Date(row.created_at).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+          }));
+          setHistory(mappedHistory);
+        }
+      } catch (err) {
+        console.error("Unexpected error loading network logs:", err);
+      }
+    };
+
+    fetchCloudHistory();
+  }, []); // Fires once when the component mounts in the viewport
+
   const analyzeWithAI = async () => {
     if (!capturedImage) return;
 
@@ -89,9 +127,9 @@ export default function Home() {
 
       setAnalysisResult(data.result);
 
-      // AUTOMATICALLY SAVE TO HISTORY ON SUCCESS
+      // AUTOMATICALLY SAVE THE GENUINE CLOUD RECORD TO FRONTEND HISTORY
       const newItem: HistoryItem = {
-        id: crypto.randomUUID(),
+        id: data.id || Math.random().toString(36).substring(2, 11),
         image: capturedImage,
         result: data.result,
         timestamp: new Date().toLocaleTimeString([], {
@@ -233,7 +271,6 @@ export default function Home() {
                 </div>
 
                 <div className="text-zinc-300 text-sm leading-relaxed space-y-4 prose prose-invert max-w-none [&&_pre]:bg-zinc-950 [&&_code]:text-yellow-400">
-                  {/* Find your ReactMarkdown component inside Section 3 and update it like this: */}
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm, remarkMath]}
                     rehypePlugins={[rehypeKatex]}
@@ -326,7 +363,7 @@ export default function Home() {
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4 mb-4">
           <h2 className="text-sm font-bold tracking-widest text-zinc-400 uppercase">
             Scan History log
-          </h2>
+          </h2>  
           <button
             onClick={() => setIsSidebarOpen(false)}
             className="text-zinc-500 hover:text-white text-xs active:scale-95"
