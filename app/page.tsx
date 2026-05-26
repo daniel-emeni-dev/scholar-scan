@@ -4,7 +4,12 @@ import { useState } from "react";
 import Camera from "@/src/components/ui/camera";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import { compressImage } from "@/src/lib/compressor";
+
+// CRITICAL: Load static fonts and symbol configurations for KaTeX math rendering
+import "katex/dist/katex.min.css";
 
 // Define what a history item looks like
 interface HistoryItem {
@@ -206,12 +211,12 @@ export default function Home() {
                   onClick={analyzeWithAI}
                   className="w-full py-3 bg-red-500 hover:bg-red-600 text-white font-extrabold rounded-xl transition-all active:scale-[0.98] uppercase tracking-wider text-xs shadow-[0_4px_20px_rgba(239,68,68,0.2)]"
                 >
-                  ⚡ Retry Signal Transmission
+                  Retry Signal Transmission
                 </button>
               </div>
             )}
 
-            {/* 3. AI RESULT BOX */}
+            {/* 3. AI RESULT BOX WITH MATH RENDERING */}
             {analysisResult && !error && (
               <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-xl animate-in fade-in duration-300">
                 <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
@@ -227,9 +232,11 @@ export default function Home() {
                   </button>
                 </div>
 
-                <div className="text-zinc-300 text-sm leading-relaxed space-y-4 whitespace-pre-line">
+                <div className="text-zinc-300 text-sm leading-relaxed space-y-4 prose prose-invert max-w-none [&&_pre]:bg-zinc-950 [&&_code]:text-yellow-400">
+                  {/* Find your ReactMarkdown component inside Section 3 and update it like this: */}
                   <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
                     components={{
                       h2: ({ node, ...props }) => (
                         <h2
@@ -263,7 +270,13 @@ export default function Home() {
                       ),
                     }}
                   >
-                    {analysisResult.replace(/\$/g, "")}
+                    {analysisResult
+                      ? analysisResult
+                          .replace(/\\\[/g, "$$\n") // Convert \[ to standalone block start
+                          .replace(/\\\]/g, "\n$$") // Convert \] to standalone block end
+                          .replace(/\\\(/g, "$") // Convert \( to inline start
+                          .replace(/\\\)/g, "$") // Convert \) to inline end
+                      : ""}
                   </ReactMarkdown>
                 </div>
               </div>
