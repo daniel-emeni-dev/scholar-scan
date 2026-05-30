@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { analyzeImage } from '@/src/lib/groq';
-import { supabase } from '@/src/lib/supabase/client'; // Import your clean Supabase client
+import { createClient } from '@/src/lib/supabase/server'; // Import the server client instead
 
 export async function POST(request: Request) {
   try {
@@ -9,31 +9,45 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing image data" }, { status: 400 });
     }
 
-    // 1. Run your original, working Groq analysis helper
-    const result = await analyzeImage(image);
+    // 1. Initialize server client
+    const supabaseServer = await createClient();
 
-    // 2. INTERCEPT & SYNC TO SUPABASE (Fault-Tolerant Loop)
-    try {
-      const { error: dbError } = await supabase
-        .from("scans")
-        .insert([
-          {
-            image_url: image,         // Raw capture payload string
-            analysis_text: result,    // The generated KaTeX-compatible Markdown text
-          },
-        ]);
+    // --- ADD THIS PART TO FIX THE 401 ---
+    // Get the token we sent in the 'Authorization' header
+    const authHeader = request.headers.get("Authorization");
+    const token = authHeader?.split(" ")[1]; // Grabs the actual code after 'Bearer'
 
-      if (dbError) {
-        console.error("⚠️ Supabase sync skipped:", dbError.message);
-      } else {
-        console.log("✅ Cloud logbook updated successfully.");
-      }
-    } catch (dbCatch) {
-      console.error("⚠️ Database connection timed out:", dbCatch);
+    // Tell Supabase to use this specific token to find the user
+    const { data: { user }, error: authError } = await supabaseServer.auth.getUser(token);
+    // ------------------------------------
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in to log scans." },
+        { status: 401 }
+      );
     }
 
-    // 3. Return response exactly matching your frontend state bounds ({ result })
+    // 2. Run your original analysis
+    const result = await analyzeImage(image);
+
+    // 3. Sync to Supabase
+    const { error: dbError } = await supabaseServer
+      .from("scans")
+      .insert([
+        {
+          image_url: image,
+          analysis_text: result,
+          user_id: user.id,
+        },
+      ]);
+
+    if (dbError) {
+      console.error("Supabase sync skipped:", dbError.message);
+    }
+
     return NextResponse.json({ result });
+
   } catch (error) {
     console.error("API Error:", error);
     return NextResponse.json({ error: "Analysis failed" }, { status: 500 });

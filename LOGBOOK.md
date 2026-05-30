@@ -179,7 +179,7 @@ Every part of the happy path was solid. But shipping a mobile tool means plannin
 The deeper issue wasn't just the ugly error display, it was what happened *after* the failure. A user experiencing a timeout would have to manually clear the state, re-open the camera, retake the photo of their circuit diagram, wait through the compression step again, and re-fire the request. The image was still perfectly intact in memory. Only the network request failed. Forcing the user through the entire flow again because of a single dropped packet is bad engineering, full stop.
 
 ### 💡 The Solution
-I implemented a dedicated error tracking state inside `page.tsx` that runs parallel to the main loading flow. When the API catch block intercepts an exception, the scanner loader fades out and a high-contrast error pane mounts in its place:
+I implemented a dedicated error tracking state inside `page.tsx` that runs parallel to the main loading flow. When the API catch block intercepts an exception, thescanner loader fades out and a high-contrast error pane mounts in its place:
 
 ```
 bg-red-950/20 border-2 border-red-500/30
