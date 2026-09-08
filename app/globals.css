@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --color-scheme: dark; /* To make the color consistent across all browsers */
   --background: #09090b; /* Force zinc-950 dark tone as baseline */
   --foreground: #f4f4f5;
   --color-background: var(--background);
